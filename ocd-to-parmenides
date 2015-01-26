@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+
+from opencivicdata.api import SunlightOCDAPI
+import requests
+import json
+import os
+
+import random
+
+
+api = SunlightOCDAPI()
+
+
+def chunk(method):
+    data = method()
+    pages = data.meta['max_page']
+    page = random.randint(0, pages)
+    chunk = method(page=page)
+    yield from chunk
+
+
+def postout(data):
+    print("Posting...")
+    data = {"api-key": os.environ.get("PARMENIDES_API_KEY", ""),
+            "data": list(data)}
+
+    r = requests.post(
+        "http://ec2-54-174-143-132.compute-1.amazonaws.com/ingest",
+        data=json.dumps(data, sort_keys=True, indent=2)
+    )
+    print(r.text)
+    return r
+
+
+postout(chunk(api.votes))
+postout(chunk(api.people))
+postout(chunk(api.organizations))
+postout(chunk(api.bills))
+postout(chunk(api.events))
