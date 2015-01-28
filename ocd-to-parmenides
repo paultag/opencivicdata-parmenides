@@ -13,7 +13,7 @@ api = SunlightOCDAPI()
 
 def chunk(method):
     data = method()
-    pages = data.meta['max_page']
+    pages = (data.meta['max_page'] - 1)
     page = random.randint(0, pages)
     chunk = method(page=page)
     yield from chunk
